@@ -1,0 +1,14 @@
+<!-- src/main/resources/META-INF/plugin.xml -->
+<idea-plugin>
+    <id>com.example.Test1</id>
+    <name>Test1</name>
+    <vendor email="Testing@yourcompany.com" url="https://www.yourcompany.com">Testing</vendor>
+
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="HelloWorld" anchor="top" factoryClass="com.example.test1.MyToolWindowFactory"/>
+    </extensions>
+
+</idea-plugin>
