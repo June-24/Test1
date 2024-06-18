@@ -1,50 +1,77 @@
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+public class ChatApp {
 
-public class ApiClient {
-
-    private static void processApiResponse(String response) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode rootNode = mapper.readTree(response);
-            JsonNode resultsArray = rootNode.get("results");
-
-            List<String> formattedMessages = new ArrayList<>();
-
-            // Iterate through each object in the results array
-            if (resultsArray.isArray()) {
-                for (JsonNode result : resultsArray) {
-                    String title = result.get("title").asText();
-                    String excerpt = result.get("excerpt").asText();
-                    // Create a formatted message with the title in bold and the excerpt below it
-                    String formattedMessage = "<b>" + title + "</b>\n" + excerpt;
-                    formattedMessages.add(formattedMessage);
-                }
-            }
-
-            // Process or display the formatted messages
-            for (String message : formattedMessages) {
-                addMessage(message, false);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            addMessage("Error: Could not process API response", false);
-        }
-    }
-
-    private static void addMessage(String message, boolean isSuccess) {
-        // Add your message handling logic here
-        System.out.println(message);
-    }
+    private JPanel chatPanel;
 
     public static void main(String[] args) {
-        String sampleResponse = "{ \"results\": [ { \"title\": \"Title 1\", \"excerpt\": \"Excerpt 1\", \"content\": \"Content 1\" }, { \"title\": \"Title 2\", \"excerpt\": \"Excerpt 2\", \"content\": \"Content 2\" }, { \"title\": \"Title 3\", \"excerpt\": \"Excerpt 3\", \"content\": \"Content 3\" }, { \"title\": \"Title 4\", \"excerpt\": \"Excerpt 4\", \"content\": \"Content 4\" } ] }";
-        processApiResponse(sampleResponse);
+        SwingUtilities.invokeLater(() -> new ChatApp().createAndShowGUI());
+    }
+
+    private void createAndShowGUI() {
+        JFrame frame = new JFrame("Chat Application");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 600);
+
+        chatPanel = new JPanel();
+        chatPanel.setLayout(new BoxLayout(chatPanel, BoxLayout.Y_AXIS));
+
+        JScrollPane scrollPane = new JScrollPane(chatPanel);
+        frame.add(scrollPane);
+
+        frame.setVisible(true);
+
+        // Test the new method
+        addMessageWithReadMore("This is a message with a Read More button.", false);
+    }
+
+    private void addMessageWithReadMore(String message, boolean isUser) {
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.X_AXIS));
+
+        JLabel messageLabel = new JLabel(message);
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        messageLabel.setForeground(Color.BLACK);
+
+        JButton readMoreButton = new JButton("Read More");
+        readMoreButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        readMoreButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        readMoreButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                readMoreAction();
+            }
+        });
+
+        messagePanel.add(messageLabel);
+        messagePanel.add(readMoreButton);
+        messagePanel.setAlignmentX(isUser ? Component.LEFT_ALIGNMENT : Component.RIGHT_ALIGNMENT);
+
+        if (isUser) {
+            messagePanel.setBackground(new Color(31, 21, 169));
+            messagePanel.setForeground(Color.WHITE);
+            messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 50, 5, 10));
+        } else {
+            messagePanel.setBackground(new Color(202, 198, 255));
+            messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 50));
+        }
+
+        chatPanel.add(messagePanel);
+        chatPanel.revalidate();
+        chatPanel.repaint();
+
+        JScrollBar verticalScrollBar = ((JScrollPane) chatPanel.getParent().getParent()).getVerticalScrollBar();
+        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+    }
+
+    private void readMoreAction() {
+        // Handle the Read More button click here
+        JOptionPane.showMessageDialog(null, "Read More button clicked!");
     }
 }
+
 
