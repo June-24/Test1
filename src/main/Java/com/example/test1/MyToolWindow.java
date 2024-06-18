@@ -1,4 +1,6 @@
+
 package com.example.test1;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.swing.*;
@@ -12,8 +14,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.stream.Collectors;
-import java.awt.*;
-import javax.swing.border.AbstractBorder;
 
 public class MyToolWindow {
     private JPanel myToolWindowContent;
@@ -103,7 +103,6 @@ public class MyToolWindow {
             String answer = rootNode.get("answer").asText(); // Extract the "answer" field from JSON
 
             addMessage(answer, false); // Add received message to chatPanel (assuming it's a response message)
-            addMessage(answer, false);
         } catch (IOException e) {
             e.printStackTrace();
             addMessage("Error: Could not process API response", false);
@@ -123,16 +122,12 @@ public class MyToolWindow {
             }
         };
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.X_AXIS));
-        String a = isUser ? "Me:" : "Bot:";
-        JLabel messageLabel = new JLabel("<html><b>" + a + "</b><br>" + message + "</html>");
+        String prefix = isUser ? "Me:" : "Bot:";
+        JLabel messageLabel = new JLabel("<html><b>" + prefix + "</b><br>" + message + "</html>");
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        Dimension fixedwidthsize = new Dimension(messagePanel.getWidth(), 5000);
-//        messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-//        messageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-//        messageLabel.setBorder(new RoundedBorder(15, Color.BLACK, 2));
 
+        // Set message panel properties
         messagePanel.add(messageLabel);
-        messagePanel.setPreferredSize(fixedwidthsize);
         messagePanel.setAlignmentX(isUser ? Component.LEFT_ALIGNMENT : Component.RIGHT_ALIGNMENT);
 
         // Set background colors and foreground colors
@@ -151,7 +146,12 @@ public class MyToolWindow {
         chatPanel.revalidate();
         chatPanel.repaint();
 
-        JScrollBar verticalScrollBar = ((JScrollPane) chatPanel.getParent().getParent()).getVerticalScrollBar();
-        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+        // Scroll to the bottom of the chat panel
+        JScrollPane scrollPane = (JScrollPane) chatPanel.getParent().getParent();
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum()));
     }
+
+
 }
+
