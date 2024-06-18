@@ -13,23 +13,22 @@ public class ApiClient {
             JsonNode rootNode = mapper.readTree(response);
             JsonNode resultsArray = rootNode.get("results");
 
-            List<String> titles = new ArrayList<>();
-            List<String> excerpts = new ArrayList<>();
+            List<String> formattedMessages = new ArrayList<>();
 
             // Iterate through each object in the results array
             if (resultsArray.isArray()) {
                 for (JsonNode result : resultsArray) {
                     String title = result.get("title").asText();
                     String excerpt = result.get("excerpt").asText();
-                    titles.add(title);
-                    excerpts.add(excerpt);
+                    // Create a formatted message with the title in bold and the excerpt below it
+                    String formattedMessage = "<b>" + title + "</b>\n" + excerpt;
+                    formattedMessages.add(formattedMessage);
                 }
             }
 
-            // Process or display the extracted titles and excerpts
-            for (int i = 0; i < titles.size(); i++) {
-                addMessage("Title: " + titles.get(i), false);
-                addMessage("Excerpt: " + excerpts.get(i), false);
+            // Process or display the formatted messages
+            for (String message : formattedMessages) {
+                addMessage(message, false);
             }
 
         } catch (IOException e) {
@@ -48,3 +47,4 @@ public class ApiClient {
         processApiResponse(sampleResponse);
     }
 }
+
