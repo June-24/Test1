@@ -1,0 +1,50 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ApiClient {
+
+    private static void processApiResponse(String response) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(response);
+            JsonNode resultsArray = rootNode.get("results");
+
+            List<String> titles = new ArrayList<>();
+            List<String> excerpts = new ArrayList<>();
+
+            // Iterate through each object in the results array
+            if (resultsArray.isArray()) {
+                for (JsonNode result : resultsArray) {
+                    String title = result.get("title").asText();
+                    String excerpt = result.get("excerpt").asText();
+                    titles.add(title);
+                    excerpts.add(excerpt);
+                }
+            }
+
+            // Process or display the extracted titles and excerpts
+            for (int i = 0; i < titles.size(); i++) {
+                addMessage("Title: " + titles.get(i), false);
+                addMessage("Excerpt: " + excerpts.get(i), false);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            addMessage("Error: Could not process API response", false);
+        }
+    }
+
+    private static void addMessage(String message, boolean isSuccess) {
+        // Add your message handling logic here
+        System.out.println(message);
+    }
+
+    public static void main(String[] args) {
+        String sampleResponse = "{ \"results\": [ { \"title\": \"Title 1\", \"excerpt\": \"Excerpt 1\", \"content\": \"Content 1\" }, { \"title\": \"Title 2\", \"excerpt\": \"Excerpt 2\", \"content\": \"Content 2\" }, { \"title\": \"Title 3\", \"excerpt\": \"Excerpt 3\", \"content\": \"Content 3\" }, { \"title\": \"Title 4\", \"excerpt\": \"Excerpt 4\", \"content\": \"Content 4\" } ] }";
+        processApiResponse(sampleResponse);
+    }
+}
