@@ -43,7 +43,7 @@ public class ChatApp {
         readMoreButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                readMoreAction();
+                openNewWindow();
             }
         });
 
@@ -68,10 +68,18 @@ public class ChatApp {
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
     }
 
-    private void readMoreAction() {
-        // Handle the Read More button click here
-        JOptionPane.showMessageDialog(null, "Read More button clicked!");
+    private void openNewWindow() {
+        JFrame newFrame = new JFrame("Read More");
+        newFrame.setSize(300, 200);
+        newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        JLabel label = new JLabel("This is the Read More content.");
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        newFrame.add(label);
+
+        newFrame.setVisible(true);
     }
 }
+
 
 
