@@ -1,0 +1,85 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class ChatApp {
+
+    private JPanel chatPanel;
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ChatApp().createAndShowGUI());
+    }
+
+    private void createAndShowGUI() {
+        JFrame frame = new JFrame("Chat Application");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 600);
+
+        chatPanel = new JPanel();
+        chatPanel.setLayout(new BoxLayout(chatPanel, BoxLayout.Y_AXIS));
+
+        JScrollPane scrollPane = new JScrollPane(chatPanel);
+        frame.add(scrollPane);
+
+        frame.setVisible(true);
+
+        // Test the new method
+        addMessageWithReadMore("This is a message with a Read More button.", false);
+    }
+
+    private void addMessageWithReadMore(String message, boolean isUser) {
+        JPanel messagePanel = new JPanel();
+        messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.X_AXIS));
+
+        JLabel messageLabel = new JLabel(message);
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        messageLabel.setForeground(Color.BLACK);
+
+        JButton readMoreButton = new JButton("Read More");
+        readMoreButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        readMoreButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        readMoreButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openNewWindow();
+            }
+        });
+
+        messagePanel.add(messageLabel);
+        messagePanel.add(readMoreButton);
+        messagePanel.setAlignmentX(isUser ? Component.LEFT_ALIGNMENT : Component.RIGHT_ALIGNMENT);
+
+        if (isUser) {
+            messagePanel.setBackground(new Color(31, 21, 169));
+            messagePanel.setForeground(Color.WHITE);
+            messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 50, 5, 10));
+        } else {
+            messagePanel.setBackground(new Color(202, 198, 255));
+            messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 50));
+        }
+
+        chatPanel.add(messagePanel);
+        chatPanel.revalidate();
+        chatPanel.repaint();
+
+        JScrollBar verticalScrollBar = ((JScrollPane) chatPanel.getParent().getParent()).getVerticalScrollBar();
+        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+    }
+
+    private void openNewWindow() {
+        JFrame newFrame = new JFrame("Read More");
+        newFrame.setSize(300, 200);
+        newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        JLabel label = new JLabel("This is the Read More content.");
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        newFrame.add(label);
+
+        newFrame.setVisible(true);
+    }
+}
+
+
+
