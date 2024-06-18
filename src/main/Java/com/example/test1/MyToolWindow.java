@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.stream.Collectors;
+import java.awt.*;
+import javax.swing.border.AbstractBorder;
 
 public class MyToolWindow {
     private JPanel myToolWindowContent;
@@ -101,32 +103,49 @@ public class MyToolWindow {
             String answer = rootNode.get("answer").asText(); // Extract the "answer" field from JSON
 
             addMessage(answer, false); // Add received message to chatPanel (assuming it's a response message)
+            addMessage(answer, false);
         } catch (IOException e) {
             e.printStackTrace();
             addMessage("Error: Could not process API response", false);
         }
     }
 
-    private void addMessage(String message, boolean isUser) {
-        JPanel messagePanel = new JPanel();
+    public void addMessage(String message, boolean isUser) {
+        JPanel messagePanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(getBackground());
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                g2d.dispose();
+            }
+        };
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.X_AXIS));
-
-        JLabel messageLabel = new JLabel(message);
+        String a = isUser ? "Me:" : "Bot:";
+        JLabel messageLabel = new JLabel("<html><b>" + a + "</b><br>" + message + "</html>");
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        messageLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        messageLabel.setForeground(Color.BLACK);
+        Dimension fixedwidthsize = new Dimension(messagePanel.getWidth(), 5000);
+//        messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+//        messageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+//        messageLabel.setBorder(new RoundedBorder(15, Color.BLACK, 2));
 
         messagePanel.add(messageLabel);
+        messagePanel.setPreferredSize(fixedwidthsize);
         messagePanel.setAlignmentX(isUser ? Component.LEFT_ALIGNMENT : Component.RIGHT_ALIGNMENT);
 
+        // Set background colors and foreground colors
         if (isUser) {
-            messagePanel.setBackground(new Color(31, 21, 169));
-            messagePanel.setForeground(Color.WHITE);
-            messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 50, 5, 10));
+            messagePanel.setBackground(new Color(21, 117, 169));
+            messageLabel.setForeground(Color.WHITE);
         } else {
-            messagePanel.setBackground(new Color(202, 198, 255));
-            messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 50));
+            messagePanel.setBackground(new Color(255, 255, 255));
+            messageLabel.setForeground(Color.BLACK);
         }
+
+        // Apply rounded border with black outline
+        messagePanel.setBorder(new RoundedBorder(15, Color.BLACK, 2));
 
         chatPanel.add(messagePanel);
         chatPanel.revalidate();
