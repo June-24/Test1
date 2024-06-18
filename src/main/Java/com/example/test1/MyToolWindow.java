@@ -3,6 +3,8 @@ package com.example.test1;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intellij.openapi.ui.Messages;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -102,7 +104,8 @@ public class MyToolWindow {
 
             String answer = rootNode.get("answer").asText(); // Extract the "answer" field from JSON
 
-            addMessage(answer, false); // Add received message to chatPanel (assuming it's a response message)
+            addMessage(answer + answer + answer, false); // Add received message to chatPanel (assuming it's a response message)
+            addButton(answer,false);
         } catch (IOException e) {
             e.printStackTrace();
             addMessage("Error: Could not process API response", false);
@@ -125,6 +128,10 @@ public class MyToolWindow {
         String prefix = isUser ? "Me:" : "Bot:";
         JLabel messageLabel = new JLabel("<html><b>" + prefix + "</b><br>" + message + "</html>");
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        Dimension fixedwidthsize=new Dimension(messagePanel.getWidth(),200);
+        messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        messageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        messagePanel.setPreferredSize(fixedwidthsize);
 
         // Set message panel properties
         messagePanel.add(messageLabel);
@@ -151,7 +158,55 @@ public class MyToolWindow {
         JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
         SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum()));
     }
+    public void addButton(String buttonText, boolean isUser) {
 
+        JPanel messagePanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(getBackground());
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                g2d.dispose();
+            }
+        };
+        messagePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        Dimension fixedwidthsize=new Dimension(messagePanel.getWidth(),200);
+        messagePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        messagePanel.setPreferredSize(fixedwidthsize);
+        JButton button = new JButton("ReadMore");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Messages.showInfoMessage(buttonText, "Button Clicked");
+            }
+        });
+        // Set message panel properties
+        messagePanel.add(button);
+        messagePanel.setAlignmentX(isUser ? Component.LEFT_ALIGNMENT : Component.RIGHT_ALIGNMENT);
+
+        // Set background colors and foreground colors
+        if (isUser) {
+            messagePanel.setBackground(new Color(21, 117, 169));
+            button.setForeground(Color.WHITE);
+        } else {
+            messagePanel.setBackground(new Color(255, 255, 255));
+            button.setForeground(Color.BLACK);
+        }
+
+        // Apply rounded border with black outline
+        messagePanel.setBorder(new RoundedBorder(15, Color.BLACK, 2));
+
+        chatPanel.add(messagePanel, BorderLayout.WEST);
+        chatPanel.revalidate();
+        chatPanel.repaint();
+
+        // Scroll to the bottom of the chat panel
+        JScrollPane scrollPane = (JScrollPane) chatPanel.getParent().getParent();
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        SwingUtilities.invokeLater(() -> verticalScrollBar.setValue(verticalScrollBar.getMaximum()));
+    }
 
 }
 
