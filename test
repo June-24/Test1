@@ -1,7 +1,9 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Embedding
+from tensorflow.keras.layers import Embedding, Flatten
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 # Example sentences
 sentence1 = "I love natural language processing"
@@ -26,9 +28,21 @@ embedding_layer = Embedding(input_dim=vocab_size, output_dim=embedding_dim, inpu
 # Get embeddings for the sentences
 embeddings = embedding_layer(tf.constant(padded_sequences))
 
-# Print the embeddings
+# Flatten embeddings if needed (to use with cosine_similarity)
+flattened_embeddings = Flatten()(embeddings)
+
+# Reshape embeddings to match for cosine similarity calculation
+emb1 = tf.reshape(flattened_embeddings[0], [1, -1])  # Reshape first embedding to 2D [1, embedding_dim*max_len]
+emb2 = tf.reshape(flattened_embeddings[1], [1, -1])  # Reshape second embedding to 2D [1, embedding_dim*max_len]
+
+# Calculate cosine similarity
+cos_sim = cosine_similarity(emb1, emb2)
+
+# Print the embeddings and cosine similarity
 print("Embedding for Sentence 1:")
-print(embeddings[0])  # Embedding for the first sentence
+print(embeddings[0].numpy())
 print("\nEmbedding for Sentence 2:")
-print(embeddings[1])  # Embedding for the second sentence
+print(embeddings[1].numpy())
+print("\nCosine Similarity between Sentence 1 and Sentence 2:", cos_sim[0][0])
+
 
