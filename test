@@ -1,83 +1,80 @@
 package com.example.test1;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.openapi.wm.ToolWindowManagerListener;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Scanner;
 
-public class MyToolWindowActivationListener implements ToolWindowManagerListener {
+public class MyApiKeyInputForm {
+    private JPanel apiKeyPanel;
+    private JTextField apiKeyField;
+    private JButton submitButton;
+    private ToolWindow toolWindow;
 
-    @Override
-    public void toolWindowShown(@NotNull ToolWindow toolWindow) {
-        if ("HelloWorld".equals(toolWindow.getId())) {
-            Project project = toolWindow.getProject();
+    public MyApiKeyInputForm(ToolWindow toolWindow) {
+        this.toolWindow = toolWindow;
+        apiKeyPanel = new JPanel(new BorderLayout());
 
-            // Prompt for API key
-            String apiKey = Messages.showInputDialog(
-                    project,
-                    "Please enter your API key:",
-                    "API Key Required",
-                    Messages.getQuestionIcon()
-            );
+        JLabel apiKeyLabel = new JLabel("Enter API Key:");
+        apiKeyField = new JTextField(20);
+        submitButton = new JButton("Submit");
 
-            if (apiKey != null && !apiKey.trim().isEmpty()) {
-                // Verify the API key
-                boolean isValid = verifyApiKey(apiKey);
+        JPanel inputPanel = new JPanel(new FlowLayout());
+        inputPanel.add(apiKeyLabel);
+        inputPanel.add(apiKeyField);
 
-                if (isValid) {
-                    // Create and add content to the tool window if the API key is valid
-                    MyToolWindow myToolWindow = new MyToolWindow();
-                    ContentFactory contentFactory = ContentFactory.getInstance();
-                    Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
-                    toolWindow.getContentManager().removeAllContents(true);  // Remove any previous content
-                    toolWindow.getContentManager().addContent(content);
-                } else {
-                    Messages.showErrorDialog(
-                            project,
-                            "Invalid API key. Please try again.",
-                            "API Key Error"
-                    );
-                    toolWindow.getContentManager().removeAllContents(true);  // Clear the tool window content
+        apiKeyPanel.add(inputPanel, BorderLayout.CENTER);
+        apiKeyPanel.add(submitButton, BorderLayout.SOUTH);
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String apiKey = apiKeyField.getText().trim();
+                if (!apiKey.isEmpty()) {
+                    if (validateApiKey(apiKey)) {
+                        showChatPage();
+                    } else {
+                        Messages.showErrorDialog("Invalid API Key. Please try again.", "Error");
+                    }
                 }
-            } else {
-                Messages.showErrorDialog(
-                        project,
-                        "API key cannot be empty. Please try again.",
-                        "API Key Error"
-                );
-                toolWindow.getContentManager().removeAllContents(true);  // Clear the tool window content
             }
+        });
+    }
+
+    public JPanel getContent() {
+        return apiKeyPanel;
+    }
+
+    private boolean validateApiKey(String apiKey) {
+        // Replace with your actual API key validation logic
+        try {
+            URL url = new URL("http://localhost:5000/validate_api_key?api_key=" + apiKey);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            int responseCode = con.getResponseCode();
+            con.disconnect();
+            return responseCode == 200;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    private boolean verifyApiKey(String apiKey) {
-        try {
-            URL url = new URL("http://localhost:5000/verify?key=" + apiKey);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
+    private void showChatPage() {
+        MyToolWindow myToolWindow = new MyToolWindow();
 
-            int responseCode = con.getResponseCode();
-            if (responseCode == 200) {
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-                    String response = in.readLine();
-                    return "valid".equalsIgnoreCase(response);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
+        ContentFactory contentFactory = ContentFactory.getInstance();
+        Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
+
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
     }
 }
 
