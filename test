@@ -1,54 +1,78 @@
-import javax.swing.*;
-import java.awt.*;
+package com.example.test1;
 
-public class DynamicPanelDemo {
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
+import org.jetbrains.annotations.NotNull;
 
-    public static void main(String[] args) {
-        // Create the frame
-        JFrame frame = new JFrame("Dynamic Panel Demo");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 600);
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
-        // Create the main panel with BoxLayout
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+public class MyToolWindowFactory implements ToolWindowFactory, DumbAware {
 
-        // Wrap the main panel in a JScrollPane
-        JScrollPane scrollPane = new JScrollPane(mainPanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    @Override
+    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        // Prompt for API key
+        String apiKey = Messages.showInputDialog(
+                project,
+                "Please enter your API key:",
+                "API Key Required",
+                Messages.getQuestionIcon()
+        );
 
-        // Add the JScrollPane to the frame
-        frame.add(scrollPane);
+        if (apiKey != null && !apiKey.trim().isEmpty()) {
+            // Verify the API key
+            boolean isValid = verifyApiKey(apiKey);
 
-        // Function to add new panels dynamically
-        JButton addButton = new JButton("Add Panel");
-        addButton.addActionListener(e -> {
-            JPanel newPanel = new JPanel();
-            newPanel.setPreferredSize(new Dimension(380, 100));
-            newPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            newPanel.add(new JLabel("New Panel"));
+            if (isValid) {
+                // Create and add content to the tool window if the API key is valid
+                MyToolWindow myToolWindow = new MyToolWindow();
+                ContentFactory contentFactory = ContentFactory.getInstance();
+                Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
+                toolWindow.getContentManager().addContent(content);
+            } else {
+                Messages.showErrorDialog(
+                        project,
+                        "Invalid API key. Please restart the tool window and try again.",
+                        "API Key Error"
+                );
+            }
+        } else {
+            Messages.showErrorDialog(
+                    project,
+                    "API key cannot be empty. Please restart the tool window and try again.",
+                    "API Key Error"
+            );
+        }
+    }
 
-            // Add the new panel to the main panel
-            mainPanel.add(newPanel);
+    private boolean verifyApiKey(String apiKey) {
+        try {
+            URL url = new URL("http://localhost:5000/verify?key=" + apiKey);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
 
-            // Refresh the main panel to show the new panel
-            mainPanel.revalidate();
-            mainPanel.repaint();
-
-            // Scroll to the bottom to make the new panel visible
-            SwingUtilities.invokeLater(() -> {
-                mainPanel.scrollRectToVisible(newPanel.getBounds());
-            });
-        });
-
-        // Add the button to the frame
-        frame.add(addButton, BorderLayout.SOUTH);
-
-        // Set the frame visible
-        frame.setVisible(true);
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200) {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                    String response = in.readLine();
+                    return "valid".equalsIgnoreCase(response);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
+
 
 
 
