@@ -1,82 +1,43 @@
-package com.example.test1;
+import com.intellij.credentialStore.CredentialAttributes;
+import com.intellij.ide.passwordSafe.PasswordSafe;
+import com.intellij.ide.passwordSafe.PasswordSafeException;
 
-import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.wm.ToolWindow;
+public class SecretStorageUtil {
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Scanner;
+    private static final String SERVICE_NAME = "MyPluginSecretService";
+    private static final String KEY_NAME = "MySecretKey";
 
-public class MyApiKeyInputForm {
-    private JPanel apiKeyPanel;
-    private JTextField apiKeyField;
-    private JButton submitButton;
-    private ToolWindow toolWindow;
-
-    public MyApiKeyInputForm(ToolWindow toolWindow) {
-        this.toolWindow = toolWindow;
-        apiKeyPanel = new JPanel(new BorderLayout());
-
-        JLabel apiKeyLabel = new JLabel("Enter API Key:");
-        apiKeyField = new JTextField(20);
-        submitButton = new JButton("Submit");
-
-        JPanel inputPanel = new JPanel(new FlowLayout());
-        inputPanel.add(apiKeyLabel);
-        inputPanel.add(apiKeyField);
-
-        apiKeyPanel.add(inputPanel, BorderLayout.CENTER);
-        apiKeyPanel.add(submitButton, BorderLayout.SOUTH);
-
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String apiKey = apiKeyField.getText().trim();
-                if (!apiKey.isEmpty()) {
-                    if (validateApiKey(apiKey)) {
-                        showChatPage();
-                    } else {
-                        Messages.showErrorDialog("Invalid API Key. Please try again.", "Error");
-                    }
-                }
-            }
-        });
-    }
-
-    public JPanel getContent() {
-        return apiKeyPanel;
-    }
-
-    private boolean validateApiKey(String apiKey) {
-        // Replace with your actual API key validation logic
+    public static void storeSecretKey(String secretKey) {
+        CredentialAttributes attributes = new CredentialAttributes(SERVICE_NAME, KEY_NAME);
         try {
-            URL url = new URL("http://localhost:5000/validate_api_key?api_key=" + apiKey);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            int responseCode = con.getResponseCode();
-            con.disconnect();
-            return responseCode == 200;
-        } catch (IOException e) {
+            PasswordSafe.getInstance().setPassword(attributes, secretKey);
+        } catch (PasswordSafeException e) {
             e.printStackTrace();
-            return false;
         }
     }
+}
 
-    private void showChatPage() {
-        MyToolWindow myToolWindow = new MyToolWindow();
+import com.intellij.credentialStore.CredentialAttributes;
+import com.intellij.ide.passwordSafe.PasswordSafe;
+import com.intellij.ide.passwordSafe.PasswordSafeException;
 
-        ContentFactory contentFactory = ContentFactory.getInstance();
-        Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
+public class SecretStorageUtil {
 
-        toolWindow.getContentManager().removeAllContents(true);
-        toolWindow.getContentManager().addContent(content);
+    private static final String SERVICE_NAME = "MyPluginSecretService";
+    private static final String KEY_NAME = "MySecretKey";
+
+    public static String retrieveSecretKey() {
+        CredentialAttributes attributes = new CredentialAttributes(SERVICE_NAME, KEY_NAME);
+        try {
+            return PasswordSafe.getInstance().getPassword(attributes);
+        } catch (PasswordSafeException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
+
+
 
 
 
