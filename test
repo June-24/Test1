@@ -31,9 +31,15 @@ public class DynamicPanelDemo {
 
             // Add the new panel to the main panel
             mainPanel.add(newPanel);
+
             // Refresh the main panel to show the new panel
             mainPanel.revalidate();
             mainPanel.repaint();
+
+            // Scroll to the bottom to make the new panel visible
+            SwingUtilities.invokeLater(() -> {
+                mainPanel.scrollRectToVisible(newPanel.getBounds());
+            });
         });
 
         // Add the button to the frame
