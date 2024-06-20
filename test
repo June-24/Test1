@@ -1,10 +1,11 @@
 package com.example.test1;
 
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ToolWindowManagerListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
@@ -15,41 +16,48 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class MyToolWindowFactory implements ToolWindowFactory, DumbAware {
+public class MyToolWindowActivationListener implements ToolWindowManagerListener {
 
     @Override
-    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        // Prompt for API key
-        String apiKey = Messages.showInputDialog(
-                project,
-                "Please enter your API key:",
-                "API Key Required",
-                Messages.getQuestionIcon()
-        );
+    public void toolWindowShown(@NotNull ToolWindow toolWindow) {
+        if ("HelloWorld".equals(toolWindow.getId())) {
+            Project project = toolWindow.getProject();
 
-        if (apiKey != null && !apiKey.trim().isEmpty()) {
-            // Verify the API key
-            boolean isValid = verifyApiKey(apiKey);
+            // Prompt for API key
+            String apiKey = Messages.showInputDialog(
+                    project,
+                    "Please enter your API key:",
+                    "API Key Required",
+                    Messages.getQuestionIcon()
+            );
 
-            if (isValid) {
-                // Create and add content to the tool window if the API key is valid
-                MyToolWindow myToolWindow = new MyToolWindow();
-                ContentFactory contentFactory = ContentFactory.getInstance();
-                Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
-                toolWindow.getContentManager().addContent(content);
+            if (apiKey != null && !apiKey.trim().isEmpty()) {
+                // Verify the API key
+                boolean isValid = verifyApiKey(apiKey);
+
+                if (isValid) {
+                    // Create and add content to the tool window if the API key is valid
+                    MyToolWindow myToolWindow = new MyToolWindow();
+                    ContentFactory contentFactory = ContentFactory.getInstance();
+                    Content content = contentFactory.createContent(myToolWindow.getContent(), "", false);
+                    toolWindow.getContentManager().removeAllContents(true);  // Remove any previous content
+                    toolWindow.getContentManager().addContent(content);
+                } else {
+                    Messages.showErrorDialog(
+                            project,
+                            "Invalid API key. Please try again.",
+                            "API Key Error"
+                    );
+                    toolWindow.getContentManager().removeAllContents(true);  // Clear the tool window content
+                }
             } else {
                 Messages.showErrorDialog(
                         project,
-                        "Invalid API key. Please restart the tool window and try again.",
+                        "API key cannot be empty. Please try again.",
                         "API Key Error"
                 );
+                toolWindow.getContentManager().removeAllContents(true);  // Clear the tool window content
             }
-        } else {
-            Messages.showErrorDialog(
-                    project,
-                    "API key cannot be empty. Please restart the tool window and try again.",
-                    "API Key Error"
-            );
         }
     }
 
