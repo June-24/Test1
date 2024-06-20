@@ -1,48 +1,48 @@
-import tensorflow as tf
-from tensorflow.keras.layers import Embedding, Flatten
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+import javax.swing.*;
+import java.awt.*;
 
-# Example sentences
-sentence1 = "I love natural language processing"
-sentence2 = "Deep learning is fascinating"
+public class DynamicPanelDemo {
 
-# Tokenize the sentences
-tokenizer = Tokenizer()
-tokenizer.fit_on_texts([sentence1, sentence2])
+    public static void main(String[] args) {
+        // Create the frame
+        JFrame frame = new JFrame("Dynamic Panel Demo");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 600);
 
-# Convert sentences to sequences of integers
-sequences = tokenizer.texts_to_sequences([sentence1, sentence2])
+        // Create the main panel with BoxLayout
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-# Pad sequences to make them of equal length
-max_len = max(len(seq) for seq in sequences)
-padded_sequences = pad_sequences(sequences, maxlen=max_len, padding='post')
+        // Wrap the main panel in a JScrollPane
+        JScrollPane scrollPane = new JScrollPane(mainPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-# Define an Embedding layer
-vocab_size = len(tokenizer.word_index) + 1  # add 1 for the zero padding
-embedding_dim = 20  # dimension of the dense embeddings
-embedding_layer = Embedding(input_dim=vocab_size, output_dim=embedding_dim, input_length=max_len)
+        // Add the JScrollPane to the frame
+        frame.add(scrollPane);
 
-# Get embeddings for the sentences
-embeddings = embedding_layer(tf.constant(padded_sequences))
+        // Function to add new panels dynamically
+        JButton addButton = new JButton("Add Panel");
+        addButton.addActionListener(e -> {
+            JPanel newPanel = new JPanel();
+            newPanel.setPreferredSize(new Dimension(380, 100));
+            newPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            newPanel.add(new JLabel("New Panel"));
 
-# Flatten embeddings if needed (to use with cosine_similarity)
-flattened_embeddings = Flatten()(embeddings)
+            // Add the new panel to the main panel
+            mainPanel.add(newPanel);
+            // Refresh the main panel to show the new panel
+            mainPanel.revalidate();
+            mainPanel.repaint();
+        });
 
-# Reshape embeddings to match for cosine similarity calculation
-emb1 = tf.reshape(flattened_embeddings[0], [1, -1])  # Reshape first embedding to 2D [1, embedding_dim*max_len]
-emb2 = tf.reshape(flattened_embeddings[1], [1, -1])  # Reshape second embedding to 2D [1, embedding_dim*max_len]
+        // Add the button to the frame
+        frame.add(addButton, BorderLayout.SOUTH);
 
-# Calculate cosine similarity
-cos_sim = cosine_similarity(emb1, emb2)
+        // Set the frame visible
+        frame.setVisible(true);
+    }
+}
 
-# Print the embeddings and cosine similarity
-print("Embedding for Sentence 1:")
-print(embeddings[0].numpy())
-print("\nEmbedding for Sentence 2:")
-print(embeddings[1].numpy())
-print("\nCosine Similarity between Sentence 1 and Sentence 2:", cos_sim[0][0])
 
 
